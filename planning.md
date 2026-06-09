@@ -10,6 +10,13 @@
 ## Domain
 
 <!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+Why it's valuable:
+
+Syllabi contain a lot of information and students often need quick answers about class structure. Things like grading, office hours, late policies, and quiz schedules. Instead of reading through an entire document, students can ask a plain-language question and get a direct answer from the actual source.
+
+Why it's hard to find officially:
+
+Syllabi are long PDFs that require students to read through everything just to find one specific answer. Students waste time searching through pages of information, and sometimes what they are looking for isn't even there leaving them unsure whether the information exists at all.
 
 ---
 
@@ -20,16 +27,16 @@
 
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 |24F 302 Syllabus.pdf |Discrete Mathematical Structures |documents/24F 302 Syllabus.pdf |
+| 2 |25S MAT Syllabus.pdf |Linear Algebra |documents/25S MAT Syllabus.pdf |
+| 3 |26S 350 Syllabus corrected.pdf |Gragh Theory |documents/350 Syllabus corrected.pdf |
+| 4 |CSC 443 Syllabus Fall 2025.docx.pdf |Software Engineering |documents/CSC 443 Syllabus Fall 2025.docx.pdf |
+| 5 |CSC373 S26 Syllabus PUBLIC.pdf |Artificial Intelligence |documents/CSC373 S26 Syllabus PUBLIC.pdf |
+| 6 |DST 314 Syllabus FALL 2025.docx.pdf |Programming for Data Science |documents/DST 314 Syllabus FALL 2025.docx.pdf |
+| 7 |DST 490 Syllabus.pdf |Data Visualization for Social Justice  |documents/DST 490 Syllabus.pdf |
+| 8 |SyllabusCSC311.pdf |Web Applications and Databases  |documents/SyllabusCSC311.pdf |
+| 9 |SyllabusCSC371.pdf |Computer Organization  |documents/SyllabusCSC371.pdf |
+| 10 |SyllabusCSC391.pdf |Programming Languages |documents/SyllabusCSC391.pdf |
 
 ---
 
