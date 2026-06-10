@@ -148,6 +148,22 @@ flowchart LR
 
 **Milestone 3 — Ingestion and chunking:**
 
+AI Tool: Claude
+
+Input: The Chunking Strategy section from planning.md (chunk size 300, overlap 50, recursive approach) and the Documents table listing all 10 PDFs.
+
+What Claude produced: A file called ingest.py with three main functions. extract_text() opens each PDF with pdfplumber and pulls out the text. clean_text() removes junk like page numbers, decorative math from cover pages, navigation sections, and broken ligature characters. chunk_text() splits the cleaned text using a recursive strategy that tries to cut at section breaks first, then paragraph breaks, then lines, then words — so chunks stay as close to 300 characters as possible without cutting through a sentence mid-meaning.
+
+How I verified it: Ran python ingest.py and read the spot-check output for each syllabus. Caught and fixed two issues: duplicate text appearing in overlapping chunks (fixed the overlap logic), and boilerplate like Pascal's triangle rows and a "Jump to a particular section" nav block still showing up in the chunks (added targeted regex patterns to remove them). Final result was 776 clean chunks across all 10 documents.
+
 **Milestone 4 — Embedding and retrieval:**
+
+AI Tool: Claude
+
+Input: The Retrieval Approach section from planning.md (model all-MiniLM-L6-v2, top-k) and the architecture diagram showing the full pipeline.
+
+What Claude produced: A file called embed.py with two main functions. build_index() loads all chunks from ingest.py, embeds them using the all-MiniLM-L6-v2 model from sentence-transformers, and stores the embeddings in a local ChromaDB database along with the source filename and chunk position as metadata. retrieve() takes a plain-text query, embeds it with the same model, and returns the top-k most similar chunks with their similarity scores.
+
+How I verified it: Ran python embed.py which built the index and then ran a smoke test against all 5 evaluation questions from planning.md. Checked that the correct syllabus appeared in the top results for each question. Queries about course-specific policies (late work, late homework) returned the right syllabus as the top hit. Queries using more generic language (office hours, minimum grade) surfaced the right syllabus within the top 5 but not always at rank 1 — this matched the cross-syllabus retrieval risk described in Anticipated Challenges. Updated top-k from 3 to 5 after seeing that k=3 would have missed the correct chunk for some queries.
 
 **Milestone 5 — Generation and interface:**
