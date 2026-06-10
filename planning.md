@@ -72,7 +72,7 @@ Recursive chunking was chosen because all syllabi in this project have clear sec
 all-MiniLM-L6-v2
 
 **Top-k:**
-3
+5
 
 **Production tradeoff reflection:**
 Production tradeoff reflection: For this project, all-MiniLM-L6-v2 works well since all syllabi are in English and the system runs locally at no cost. However, if this were deployed for all students at Augsburg University, three tradeoffs would need to be addressed. First, if students speak different languages, I would switch to a multilingual embedding model such as paraphrase-multilingual-MiniLM which understands multiple languages directly without needing translation. Second, if the system became slow under heavy usage from many students, I would deploy to a cloud service and use load balancing to spread requests across multiple servers so no single server gets overwhelmed. Third, if academic terminology caused retrieval problems, I would switch to a larger model like all-mpnet-base-v2 which handles domain-specific text more accurately than the smaller model, at the tradeoff of being slower and more expensive to run.
