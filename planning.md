@@ -47,11 +47,16 @@ Syllabi are long PDFs that require students to read through everything just to f
      numbers fit the structure of your documents.
      A review-heavy corpus warrants different chunking than a long FAQ. -->
 
-**Chunk size:**
+**Chunk size:** 
+300 characters
 
-**Overlap:**
+**Overlap:** 
+50 characters
 
-**Reasoning:**
+**Reasoning:** 
+A chunk size of 300 characters is large enough to capture a complete syllabus section  such as office hours, grading policy, or late submission rules  without cramming multiple topics into one chunk. The 50 character overlap acts as a memory buffer at chunk boundaries, ensuring that any rule or sentence that gets cut at the edge of a chunk still appears in the next one so no meaning is lost between chunks.
+Recursive chunking was chosen because all syllabi in this project have clear section headings like "Grading", "Expectations", and "Course Description." Recursive splitting uses those headings as natural cut points first, then falls back to paragraph-level splits when a section is too long. This is important because the 10 syllabi in this project are from different professors and courses so each formatted slightly differently  and recursive chunking handles that inconsistency better than fixed-size, which would blindly cut through headings and paragraphs regardless of structure.
+
 
 ---
 
@@ -64,10 +69,13 @@ Syllabi are long PDFs that require students to read through everything just to f
      support, accuracy on domain-specific text, latency? -->
 
 **Embedding model:**
+all-MiniLM-L6-v2
 
 **Top-k:**
+3
 
 **Production tradeoff reflection:**
+Production tradeoff reflection: For this project, all-MiniLM-L6-v2 works well since all syllabi are in English and the system runs locally at no cost. However, if this were deployed for all students at Augsburg University, three tradeoffs would need to be addressed. First, if students speak different languages, I would switch to a multilingual embedding model such as paraphrase-multilingual-MiniLM which understands multiple languages directly without needing translation. Second, if the system became slow under heavy usage from many students, I would deploy to a cloud service and use load balancing to spread requests across multiple servers so no single server gets overwhelmed. Third, if academic terminology caused retrieval problems, I would switch to a larger model like all-mpnet-base-v2 which handles domain-specific text more accurately than the smaller model, at the tradeoff of being slower and more expensive to run.
 
 ---
 
@@ -80,11 +88,11 @@ Syllabi are long PDFs that require students to read through everything just to f
 
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 |What are the office hours for CSC 311? |MW 1:30pm - 2:00pm, T 10:30am - 11:00am, or by appointment |
+| 2 |What happens if you submit a late assignment or project in CSC 311? |Late assignments and late projects receive no credit, but projects must still be submitted |
+| 3 |What is the minimum grade required for CSC 311 to count toward the Computer Science major? |C- or higher |
+| 4 |What percentage of the DST 490 course grade comes from the Data Visualization Project? |25% of the overall grade |
+| 5 |What is the late homework policy in DST 490? |Work is still due even if you miss class. Late homework may be submitted but no feedback will be provided, and the instructor reserves the right to limit late submissions |
 
 ---
 
@@ -94,9 +102,9 @@ Syllabi are long PDFs that require students to read through everything just to f
      Consider: noisy or inconsistent documents, missing source attribution, off-topic
      retrieval, chunks that split key information across boundaries. -->
 
-1.
+1. Off-topic retrieval may occur when multiple syllabi contain similar sections such as grading policies, late submission rules, or academic honesty statements. Since these sections use similar language across different courses, the embedding model may retrieve chunks from the wrong syllabus when a student asks a course-specific question. For example, returning CSC 311's grading policy when the student asked about DST 490.
 
-2.
+2.  PDF extraction may produce noisy or misformatted text when pdfplumber processes tables and calendars inside the syllabi. Structured content like grading breakdowns and course calendars may get extracted with broken spacing, missing characters, or jumbled column order, making those chunks harder to embed accurately and reducing retrieval quality for questions about dates, deadlines, or grade percentages.
 
 ---
 
@@ -107,8 +115,16 @@ Syllabi are long PDFs that require students to read through everything just to f
      Label each stage with the tool or library you're using.
      You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
      You'll use this diagram as context when prompting AI tools to implement each stage. -->
-
+```mermaid
+flowchart LR
+    A[📄 Document Ingestion\npdfplumber] --> B[✂️ Chunking\nRecursive Strategy\nchunk_size=300\noverlap=50]
+    B --> C[🔢 Embedding\nall-MiniLM-L6-v2\nsentence-transformers]
+    C --> D[🗄️ Vector Store\nChromaDB]
+    D --> E[🔍 Retrieval\nSemantic Similarity Search\nTop-K=3]
+    E --> F[💬 Generation\nLLM\nGrounded Response + Citations]
+```
 ---
+
 
 ## AI Tool Plan
 
@@ -121,6 +137,14 @@ Syllabi are long PDFs that require students to read through everything just to f
      "I'll use AI to help me code" is not a plan.
      "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
      with my specified chunk size and overlap" is a plan. -->
+
+     AI Tool: Claude
+
+     Input: My Document Ingestion requirements from planning.md and the pdfplumber hint from the project instructions
+
+     Expected output: A function that loads all 10 syllabus PDFs from the documents folder, extracts clean text using pdfplumber, and removes any navigation artifacts or extra whitespace
+
+     Verification: Manually read through the extracted text for each syllabus, specifically checking that table sections like course calendars and grading breakdowns are readable and not jumbled or missing characters
 
 **Milestone 3 — Ingestion and chunking:**
 
