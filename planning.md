@@ -150,28 +150,37 @@ flowchart LR
 
 AI Tool: Claude
 
-Input: The Chunking Strategy section from planning.md (chunk size 300, overlap 50, recursive approach) and the Documents table listing all 10 PDFs.
+Input: 
+The Chunking Strategy section from planning.md (chunk size 300, overlap 50, recursive approach) and the Documents table listing all 10 PDFs.
 
-What Claude produced: A file called ingest.py with three main functions. extract_text() opens each PDF with pdfplumber and pulls out the text. clean_text() removes junk like page numbers, decorative math from cover pages, navigation sections, and broken ligature characters. chunk_text() splits the cleaned text using a recursive strategy that tries to cut at section breaks first, then paragraph breaks, then lines, then words — so chunks stay as close to 300 characters as possible without cutting through a sentence mid-meaning.
+What Claude produced: 
+A file called ingest.py with three main functions. extract_text() opens each PDF with pdfplumber and pulls out the text. clean_text() removes junk like page numbers, decorative math from cover pages, navigation sections, and broken ligature characters. chunk_text() splits the cleaned text using a recursive strategy that tries to cut at section breaks first, then paragraph breaks, then lines, then words — so chunks stay as close to 300 characters as possible without cutting through a sentence mid-meaning.
 
-How I verified it: Ran python ingest.py and read the spot-check output for each syllabus. Caught and fixed two issues: duplicate text appearing in overlapping chunks (fixed the overlap logic), and boilerplate like Pascal's triangle rows and a "Jump to a particular section" nav block still showing up in the chunks (added targeted regex patterns to remove them). Final result was 776 clean chunks across all 10 documents.
+How I verified it: 
+Ran python ingest.py and read the spot-check output for each syllabus. Caught and fixed two issues: duplicate text appearing in overlapping chunks (fixed the overlap logic), and boilerplate like Pascal's triangle rows and a "Jump to a particular section" nav block still showing up in the chunks (added targeted regex patterns to remove them). Final result was 776 clean chunks across all 10 documents.
 
 **Milestone 4 — Embedding and retrieval:**
 
 AI Tool: Claude
 
-Input: The Retrieval Approach section from planning.md (model all-MiniLM-L6-v2, top-k) and the architecture diagram showing the full pipeline.
+Input: 
+The Retrieval Approach section from planning.md (model all-MiniLM-L6-v2, top-k) and the architecture diagram showing the full pipeline.
 
-What Claude produced: A file called embed.py with two main functions. build_index() loads all chunks from ingest.py, embeds them using the all-MiniLM-L6-v2 model from sentence-transformers, and stores the embeddings in a local ChromaDB database along with the source filename and chunk position as metadata. retrieve() takes a plain-text query, embeds it with the same model, and returns the top-k most similar chunks with their similarity scores.
+What Claude produced: 
+A file called embed.py with two main functions. build_index() loads all chunks from ingest.py, embeds them using the all-MiniLM-L6-v2 model from sentence-transformers, and stores the embeddings in a local ChromaDB database along with the source filename and chunk position as metadata. retrieve() takes a plain-text query, embeds it with the same model, and returns the top-k most similar chunks with their similarity scores.
 
-How I verified it: Ran python embed.py which built the index and then ran a smoke test against all 5 evaluation questions from planning.md. Checked that the correct syllabus appeared in the top results for each question. Queries about course-specific policies (late work, late homework) returned the right syllabus as the top hit. Queries using more generic language (office hours, minimum grade) surfaced the right syllabus within the top 5 but not always at rank 1 — this matched the cross-syllabus retrieval risk described in Anticipated Challenges. Updated top-k from 3 to 5 after seeing that k=3 would have missed the correct chunk for some queries.
+How I verified it: 
+Ran python embed.py which built the index and then ran a smoke test against all 5 evaluation questions from planning.md. Checked that the correct syllabus appeared in the top results for each question. Queries about course-specific policies (late work, late homework) returned the right syllabus as the top hit. Queries using more generic language (office hours, minimum grade) surfaced the right syllabus within the top 5 but not always at rank 1 — this matched the cross-syllabus retrieval risk described in Anticipated Challenges. Updated top-k from 3 to 5 after seeing that k=3 would have missed the correct chunk for some queries.
 
 **Milestone 5 — Generation and interface:**
 
 AI Tool: Claude
 
-Input: The full pipeline diagram from planning.md, the grounding requirement (answers from retrieved context only with source attribution), the output format (answer plus source list), and the Gradio skeleton structure from the assignment instructions.
+Input: 
+The full pipeline diagram from planning.md, the grounding requirement (answers from retrieved context only with source attribution), the output format (answer plus source list), and the Gradio skeleton structure from the assignment instructions.
 
-What Claude produced: Two files. generate.py contains the ask() function which takes a question, retrieves the top 5 chunks using the retrieval pipeline, formats them into a numbered context block, and sends them to Groq's llama-3.3-70b-versatile with a strict system prompt. The system prompt uses numbered rules that forbid the model from using outside knowledge and tells it to say "I don't have enough information about that in the provided syllabi" if the answer is not in the retrieved chunks. Temperature is set to 0.0 so the model cannot improvise. Source attribution is handled programmatically by pulling the source filenames directly from the retrieval metadata rather than letting the LLM write them, so citations are always accurate. app.py is the Gradio web interface with a question input box, an answer output box, and a sources box showing which documents the answer came from.
+What Claude produced: 
+Two files. generate.py contains the ask() function which takes a question, retrieves the top 5 chunks using the retrieval pipeline, formats them into a numbered context block, and sends them to Groq's llama-3.3-70b-versatile with a strict system prompt. The system prompt uses numbered rules that forbid the model from using outside knowledge and tells it to say "I don't have enough information about that in the provided syllabi" if the answer is not in the retrieved chunks. Temperature is set to 0.0 so the model cannot improvise. Source attribution is handled programmatically by pulling the source filenames directly from the retrieval metadata rather than letting the LLM write them, so citations are always accurate. app.py is the Gradio web interface with a question input box, an answer output box, and a sources box showing which documents the answer came from.
 
-How I verified it: Ran python generate.py to test grounded generation on three evaluation questions before launching the UI. Question 2 (late assignment policy for CSC 311) returned the correct answer from the right document. Questions 1 and 3 returned "I don't have enough information" because the answer chunks were not making it into the top 5 retrieved results. This is grounding working correctly — the model refused to guess rather than hallucinating an answer. Investigated the CSC 311 minimum grade question and found the answer was split across two chunk boundaries (chunk 11 ends mid-sentence and chunk 12 picks up the rest), which meant neither chunk alone scored high enough to surface. Documented this as a concrete example of Anticipated Challenge 2 (chunk boundary splitting) from this planning document.
+How I verified it: 
+Ran python generate.py to test grounded generation on three evaluation questions before launching the UI. Question 2 (late assignment policy for CSC 311) returned the correct answer from the right document. Questions 1 and 3 returned "I don't have enough information" because the answer chunks were not making it into the top 5 retrieved results. This is grounding working correctly — the model refused to guess rather than hallucinating an answer. Investigated the CSC 311 minimum grade question and found the answer was split across two chunk boundaries (chunk 11 ends mid-sentence and chunk 12 picks up the rest), which meant neither chunk alone scored high enough to surface. Documented this as a concrete example of Anticipated Challenge 2 (chunk boundary splitting) from this planning document.
